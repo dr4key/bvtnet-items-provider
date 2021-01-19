@@ -329,15 +329,14 @@ class ItemsProvider {
 
       // implement per field search/filtering
       if (col.searchable && searchFields) {
-        const val = searchFields[field.key]
-
+        const val = searchFields[col.data]
         if (val) {
           // actual object with value, then simply assign it
           if (val.value) {
             col.search = val
           } else {
-            col.search = col.search || {}
-            col.search.value =  { value: `${val || ''}`, regex: false }
+            col.search =  { value: `${val || ''}`, regex: false }
+
             if (val instanceof RegExp) {
               col.search.regex = true
               col.search.value = val.source
@@ -348,7 +347,7 @@ class ItemsProvider {
 
       // handle multi-columns sorting
       if (col.orderable && sortFields) {
-        const sort = sortFields[field.key]
+        const sort = sortFields[col.data]
 
         // validate valid values
         if (sort === 'asc' || sort  === 'desc') {

@@ -303,7 +303,7 @@ test('ItemsProvider.items searchFields override', async (t) => {
     perPage: 15,
     filter: null,
     sortBy: null,
-    searchFields: { test0: /^test0000$/, test1: { value: /^test1111$/, regex: false }, test2: 'test'},
+    searchFields: { test0: /^test0000$/, test1: { value: /^test1111$/, regex: false }, test2: 'test2222'},
   })
 
   t.true(translated)
@@ -311,14 +311,14 @@ test('ItemsProvider.items searchFields override', async (t) => {
   t.true(beforeQuery)
 
   const query = ip.state.query
-
+console.log(JSON.stringify(query.columns))
   // assert filter column 0 by regex
   t.is(query.columns[0].search.value, '^test0000$')
   t.is(query.columns[0].search.regex, true)
-  // assert search is not an object
-  t.not(query.columns[1].search, Object)
-  t.is(query.columns[1].search, 'test')
-  // assert test1 not searchable
-  t.is(query.columns[2], undefined)
-  
+  // assert test1 search is undefined
+  t.is(query.columns[1].search, undefined)
+  // assert test2 is searchable and not regex
+  console.log(JSON.stringify(query.columns[2]), query.columns[2].search.value, query.columns[2].search.regex)
+  t.is(query.columns[2].search.value, 'test2222')
+  t.is(query.columns[2].search.regex, false)
 })
