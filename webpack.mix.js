@@ -3,7 +3,7 @@ const path         = require('path');
 const mix          = require('laravel-mix');
 const pkg          = require('./package.json');
 const fs           = require('fs');
-const public       = process.env.NODE_ENV.trim() === 'build' ? 'dist' : 'example';
+const public       = process.env.NODE_ENV.trim() === 'production' ? 'dist' : 'example';
 const ESLintPlugin = require('eslint-webpack-plugin');
 
 mix.setPublicPath(path.normalize(public));
@@ -57,12 +57,12 @@ const config = {
 
 mix.webpackConfig(config).sourceMaps();
 
-if (process.env.NODE_ENV.trim() === 'build') {
+if (process.env.NODE_ENV.trim() === 'production') {
   mix.js(`src/index.js`, `${ public }`);
   mix.then(function () {
     const data   = fs.readFileSync(`${ public }/${ fileName }`);
     const fd     = fs.openSync(`${ public }/${ fileName }`, 'w+');
-    const insert = new Buffer(banner);
+    const insert = Buffer.from(banner);
     fs.writeSync(fd, insert, 0, insert.length, 0)
     fs.writeSync(fd, data, 0, data.length, insert.length)
     fs.close(fd, (err) => {
