@@ -278,6 +278,8 @@ class ItemsProvider {
       ...qry,
       ...inQuery
     }
+    const searchFields = ctx.searchFields || state.searchFields || null
+    const sortFields = ctx.sortFields || state.sortFields || null
 
     if (ctx.filter instanceof RegExp) {
       query.search.regex = true
@@ -326,8 +328,8 @@ class ItemsProvider {
       }
 
       // implement per field search/filtering
-      if (col.searchable && state.searchFields) {
-        const val = state.searchFields[field.key]
+      if (col.searchable && searchFields) {
+        const val = searchFields[field.key]
 
         if (val) {
           // actual object with value, then simply assign it
@@ -345,8 +347,8 @@ class ItemsProvider {
       }
 
       // handle multi-columns sorting
-      if (col.orderable && state.sortFields) {
-        const sort = state.sortFields[field.key]
+      if (col.orderable && sortFields) {
+        const sort = sortFields[field.key]
 
         // validate valid values
         if (sort === 'asc' || sort  === 'desc') {

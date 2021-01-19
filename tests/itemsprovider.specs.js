@@ -176,3 +176,149 @@ test('ItemsProvider.items success', async (t) => {
   // filter excluded fields
   t.is(query.columns[4].search, undefined)
 })
+
+test('ItemsProvider.items sortFields override', async (t) => {
+  const fakeAxios = {}
+  fakeAxios.get = sinon.fake.returns(new Promise((resolve, reject) => {
+    resolve({
+      data: {
+        recordsFiltered: 0,
+        recordsTotal: 1,
+        data: null
+      }
+    })
+  }))
+  let translated = false
+
+  const ip = new ItemsProvider({
+    axios: fakeAxios,
+    fields: [
+      {
+        key: 'test0',
+        sortable: false
+      },
+      { key: 'test1',
+        sortable: true,
+        searchable: false
+      },
+      { key: 'test2',
+        sortable: true
+      },
+      { key: 'test3',
+        sortable: true
+      },
+      { key: 'test4',
+        sortable: true
+      }
+    ],
+    sortFields: { test0: 'desc', test1: 'asc', test3: 'desc' }
+  })
+
+  let success = false, beforeQuery = false
+  ip.onResponseComplete = () => {
+    success = true
+  }
+  ip.onBeforeQuery = () => {
+    beforeQuery = true
+  }
+  ip.onFieldTranslate = () => {
+    translated = true
+  }
+
+  await ip.items({
+    apiUrl: 'https://www.google.com/?test=unit',
+    currentPage: 1,
+    perPage: 15,
+    filter: null,
+    sortBy: null,
+    sortFields: {test1: 'desc'}
+  })
+
+  t.true(translated)
+  t.true(success)
+  t.true(beforeQuery)
+
+  const query = ip.state.query
+
+  // assert sortFields test1
+  t.is(query.order[0].column, 1)
+  t.is(query.order[0].dir, 'desc')
+
+  // assert 
+  t.is(query.order[1], undefined)
+  t.is(query.order[1], undefined)
+})
+
+test('ItemsProvider.items searchFields override', async (t) => {
+  const fakeAxios = {}
+  fakeAxios.get = sinon.fake.returns(new Promise((resolve, reject) => {
+    resolve({
+      data: {
+        recordsFiltered: 0,
+        recordsTotal: 1,
+        data: null
+      }
+    })
+  }))
+  let translated = false
+
+  const ip = new ItemsProvider({
+    axios: fakeAxios,
+    fields: [
+      {
+        key: 'test0',
+        sortable: false
+      },
+      { key: 'test1',
+        sortable: true,
+        searchable: false
+      },
+      { key: 'test2',
+        sortable: true
+      },
+      { key: 'test3',
+        sortable: true
+      },
+      { key: 'test4',
+        sortable: true
+      }
+    ],
+    searchFields: { test1: { value: 'test', regex: true }, test2: 'test', test3: /test/gi }
+  })
+
+  let success = false, beforeQuery = false
+  ip.onResponseComplete = () => {
+    success = true
+  }
+  ip.onBeforeQuery = () => {
+    beforeQuery = true
+  }
+  ip.onFieldTranslate = () => {
+    translated = true
+  }
+
+  await ip.items({
+    apiUrl: 'https://www.google.com/?test=unit',
+    currentPage: 1,
+    perPage: 15,
+    filter: null,
+    sortBy: null,
+    searchFields: { test0: /^test0000$/, test1: { value: /^test1111$/, regex: false }, test2: 'test'},
+  })
+
+  t.true(translated)
+  t.true(success)
+  t.true(beforeQuery)
+
+  const query = ip.state.query
+
+  // assert filter column 0 by regex
+  t.is(query.columns[0].search.value, '^test0000$')
+  t.is(query.columns[0].search.regex, true)
+  // assert search is not an object
+  t.not(query.columns[1].search, Object)
+  t.is(query.columns[1].search, 'test')
+  // assert test1 not searchable
+  t.is(query.columns[2], undefined)
+  
+})
