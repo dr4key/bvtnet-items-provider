@@ -323,7 +323,7 @@ class ItemsProvider {
       }
 
       // handle server-side for non-local fields
-      if (col.orderable && ctx.sortBy === field.key) {
+      if (col.orderable && ctx.sortBy === col.data) {
         query.order.push({column: index, dir: ctx.sortDesc ? 'desc' : 'asc' })
       }
 

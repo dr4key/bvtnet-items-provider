@@ -311,14 +311,64 @@ test('ItemsProvider.items searchFields override', async (t) => {
   t.true(beforeQuery)
 
   const query = ip.state.query
-console.log(JSON.stringify(query.columns))
+
   // assert filter column 0 by regex
   t.is(query.columns[0].search.value, '^test0000$')
   t.is(query.columns[0].search.regex, true)
   // assert test1 search is undefined
   t.is(query.columns[1].search, undefined)
   // assert test2 is searchable and not regex
-  console.log(JSON.stringify(query.columns[2]), query.columns[2].search.value, query.columns[2].search.regex)
   t.is(query.columns[2].search.value, 'test2222')
   t.is(query.columns[2].search.regex, false)
+})
+
+test('ItemsProvider.items sortBy sortDesc', async (t) => {
+  const fakeAxios = {}
+  fakeAxios.get = sinon.fake.returns(new Promise((resolve, reject) => {
+    resolve({
+      data: {
+        recordsFiltered: 0,
+        recordsTotal: 1,
+        data: null
+      }
+    })
+  }))
+  let translated = false
+
+  const ip = new ItemsProvider({
+    axios: fakeAxios,
+    fields: [
+      {
+        key: 'test0',
+        sortable: false
+      },
+      { key: 'test1',
+        sortable: true,
+        searchable: false
+      },
+      { key: 'test2',
+        sortable: true
+      },
+      { key: 'test3',
+        sortable: true
+      },
+      { key: 'test4',
+        sortable: true
+      }
+    ]
+  })
+
+  await ip.items({
+    apiUrl: 'https://www.google.com/?test=unit',
+    currentPage: 1,
+    perPage: 15,
+    sortBy: 'test1',
+    sortDesc: false,
+  })
+
+  const query = ip.state.query
+
+  // assert filter column 0 by regex
+  t.is(query.order[0].column, 1)
+  t.is(query.order[0].dir, 'asc')
 })
