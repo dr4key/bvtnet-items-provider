@@ -1,6 +1,9 @@
 let _name = new WeakMap(),
  _axios = new WeakMap(),
  _localItems = new WeakMap()
+let _name = new WeakMap()
+let _axios = new WeakMap()
+let _localItems = new WeakMap()
 
 class ItemsProvider {
   /**
@@ -41,6 +44,7 @@ class ItemsProvider {
       { value: 1000, text: '1000'},
       { value: -1, text: 'All'}
     ]
+    that.cancel = null
     that.resetCounterVars()
 
     state.perPage              = opts.perPage || 15
@@ -411,6 +415,10 @@ class ItemsProvider {
     const apiParts = (ctx.apiUrl || that.apiUrl).split('?')
     let query = {}
 
+    if (that.cancel) {
+      that.cancel()
+    }
+
     if (apiParts.length > 1) {
       query = that.queryParseString(apiParts[1])
     }
@@ -433,7 +441,17 @@ class ItemsProvider {
 
     const axios   = that.getAxios()
     const ajaxUrl = that.state.queryUrl
-    const promise = (that.method === 'POST') ? axios.post(ajaxUrl, query) : axios.get(`${ajaxUrl}?${that.queryStringify(query)}`)
+    const options = (typeof axios.CancelToken === 'function')
+      ? {
+        cancelToken: new axios.CancelToken(function executor(c) {
+          that.cancel = c
+        })
+      }
+      : {}
+
+    const promise = (that.method === 'POST')
+      ? axios.post(ajaxUrl, query)
+      : axios.get(`${ajaxUrl}?${that.queryStringify(query)}`)
 
     return promise.then(rsp => {
       const myData   = rsp.data
@@ -456,7 +474,9 @@ class ItemsProvider {
 
       return myData.data || []
     }).catch(err => {
-      that.busy = false
+      if (!axios.isCancel) {
+        that.busy = false
+      }
 
       if (typeof that.onResponseError === 'function') {
         that.onResponseError(err)
