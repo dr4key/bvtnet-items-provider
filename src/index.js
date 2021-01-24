@@ -296,7 +296,9 @@ class ItemsProvider {
     for (let i = 0; i < fields.length; i++) {
       let field = fields[i]
       if (typeof field === 'string') {
-        field = { key: field }
+        field = {key: field}
+      } else if (!field.key) {
+        field.key = field.data || field.name
       }
 
       const col = {
@@ -327,13 +329,13 @@ class ItemsProvider {
       }
 
       // handle server-side for non-local fields
-      if (col.orderable && ctx.sortBy === col.data) {
-        query.order.push({column: index, dir: ctx.sortDesc ? 'desc' : 'asc' })
+      if (col.orderable && ctx.sortBy === field.key) {
+        query.order.push({column: index, dir: ctx.sortDesc ? 'desc' : 'asc'})
       }
 
       // implement per field search/filtering
       if (col.searchable && searchFields) {
-        const val = searchFields[col.data]
+        const val = searchFields[field.key]
         if (val) {
           // actual object with value, then simply assign it
           if (val.value) {
@@ -351,7 +353,7 @@ class ItemsProvider {
 
       // handle multi-columns sorting
       if (col.orderable && sortFields) {
-        const sort = sortFields[col.data]
+        const sort = sortFields[field.key]
 
         // validate valid values
         if (sort === 'asc' || sort  === 'desc') {
