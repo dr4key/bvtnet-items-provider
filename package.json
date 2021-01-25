@@ -1,6 +1,6 @@
 {
   "name": "bvtnet-items-provider",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "datatables.net ajax items provider for bootstrap-vue b-table",
   "author": "Tom Noogen",
   "main": "dist/index.js",
@@ -41,6 +41,7 @@
     "@babel/register": "^7.12.10",
     "ava": "^3.15.0",
     "axios": "^0.21.1",
+    "axios-mock-adapter": "^1.19.0",
     "babel-eslint": "^10.1.0",
     "babel-plugin-istanbul": "^6.0.0",
     "bootstrap-vue": "^2.21.2",
@@ -52,7 +53,7 @@
     "eslint": "^7.18.0",
     "eslint-config-prettier": "^7.2.0",
     "eslint-friendly-formatter": "^4.0.1",
-    "eslint-plugin-vue": "^7.4.1",
+    "eslint-plugin-vue": "^7.5.0",
     "eslint-webpack-plugin": "^2.4.3",
     "file-loader": "^6.2.0",
     "laravel-mix": "^6.0.10",
@@ -60,7 +61,7 @@
     "nyc": "^15.1.0",
     "postcss": "^8.2.4",
     "raw-loader": "^4.0.2",
-    "sinon": "^9.2.3",
+    "sinon": "^9.2.4",
     "vue": "^2.6.12",
     "vue-loader": "^15.9.6",
     "vue-template-compiler": "^2.6.12"
