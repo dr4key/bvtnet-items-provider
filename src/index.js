@@ -453,7 +453,7 @@ class ItemsProvider {
 
     const promise = (that.method === 'POST')
       ? axios.post(ajaxUrl, query)
-      : axios.get(`${ajaxUrl}?${that.queryStringify(query)}`)
+      : axios.get(`${ajaxUrl}?${that.queryStringify(query)}`, options)
 
     return promise.then(rsp => {
       const myData   = rsp.data
