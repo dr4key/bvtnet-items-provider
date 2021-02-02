@@ -1,14 +1,14 @@
-const webpack      = require('webpack');
-const path         = require('path');
-const mix          = require('laravel-mix');
-const pkg          = require('./package.json');
-const fs           = require('fs');
-const public       = process.env.NODE_ENV.trim() === 'production' ? 'dist' : 'example';
-const ESLintPlugin = require('eslint-webpack-plugin');
+const webpack      = require('webpack')
+const path         = require('path')
+const mix          = require('laravel-mix')
+const pkg          = require('./package.json')
+const fs           = require('fs')
+const buildPath       = process.env.NODE_ENV.trim() === 'production' ? 'dist' : 'example'
+const ESLintPlugin = require('eslint-webpack-plugin')
 
-mix.setPublicPath(path.normalize(public));
+mix.setPublicPath(path.normalize(buildPath))
 
-const libraryName = pkg.name;
+const libraryName = pkg.name
 const banner  = `/*!
  * ${pkg.name}
  * ${pkg.description}\n
@@ -16,9 +16,9 @@ const banner  = `/*!
  * @author ${pkg.author}
  * @homepage ${pkg.homepage}
  * @repository ${pkg.repository.url}
- */\n`;
+ */\n`
 
-const fileName = 'index.js';
+const fileName = 'index.js'
 
 const config = {
   externals: {
@@ -34,7 +34,7 @@ const config = {
     ]
   },
   output: {
-    path: path.resolve(public),
+    path: path.resolve(buildPath),
     filename: fileName,
     library: libraryName,
     libraryTarget: 'umd',
@@ -53,26 +53,26 @@ const config = {
     }),
     new ESLintPlugin()
   ]
-};
+}
 
-mix.webpackConfig(config).sourceMaps();
+mix.webpackConfig(config).sourceMaps()
 
 if (process.env.NODE_ENV.trim() === 'production') {
-  mix.js(`src/index.js`, `${ public }`);
+  mix.js('src/index.js', `${ buildPath }`)
   mix.then(function () {
-    const data   = fs.readFileSync(`${ public }/${ fileName }`);
-    const fd     = fs.openSync(`${ public }/${ fileName }`, 'w+');
-    const insert = Buffer.from(banner);
+    const data   = fs.readFileSync(`${ buildPath }/${ fileName }`)
+    const fd     = fs.openSync(`${ buildPath }/${ fileName }`, 'w+')
+    const insert = Buffer.from(banner)
     fs.writeSync(fd, insert, 0, insert.length, 0)
     fs.writeSync(fd, data, 0, data.length, insert.length)
     fs.close(fd, (err) => {
-      if (err) throw err;
-    });
-  });
-  mix.version();
-  mix.disableNotifications();
+      if (err) throw err
+    })
+  })
+  mix.version()
+  mix.disableNotifications()
 } else {
-  mix.js(`example/app.js`, `${ public }`).vue();
+  mix.js('example/app.js', `${ buildPath }`).vue()
   mix.browserSync({
     proxy: false,
     port: 3000,
@@ -85,6 +85,6 @@ if (process.env.NODE_ENV.trim() === 'production') {
     server: {
       baseDir: './'
     }
-  });
+  })
 }
 
