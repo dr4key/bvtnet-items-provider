@@ -1,6 +1,8 @@
 import test from 'ava'
 import ItemsProvider from '../src/index.js'
 import sinon from 'sinon'
+import axios from 'axios'
+import MockAdapter from 'axios-mock-adapter'
 
 test('ItemsProvider decode, encode error', t => {
   const ip = new ItemsProvider({axios: null, fields: []})
@@ -114,20 +116,20 @@ test('ItemsProvider.items success', async (t) => {
     fields: [
       {
         key: 'test0',
-        sortable: false
+        orderable: false
       },
       { key: 'test1',
-        sortable: true,
+        orderable: true,
         searchable: false
       },
       { key: 'test2',
-        sortable: true
+        orderable: true
       },
       { key: 'test3',
-        sortable: true
+        orderable: true
       },
       { key: 'test4',
-        sortable: true
+        orderable: true
       },
       {
         key: ''
@@ -195,20 +197,20 @@ test('ItemsProvider.items sortFields override', async (t) => {
     fields: [
       {
         key: 'test0',
-        sortable: false
+        orderable: false
       },
       { key: 'test1',
-        sortable: true,
+        orderable: true,
         searchable: false
       },
       { key: 'test2',
-        sortable: true
+        orderable: true
       },
       { key: 'test3',
-        sortable: true
+        orderable: true
       },
       { key: 'test4',
-        sortable: true
+        orderable: true
       }
     ],
     sortFields: { test0: 'desc', test1: 'asc', test3: 'desc' }
@@ -267,20 +269,20 @@ test('ItemsProvider.items searchFields override', async (t) => {
     fields: [
       {
         key: 'test0',
-        sortable: false
+        orderable: false
       },
       { key: 'test1',
-        sortable: true,
+        orderable: true,
         searchable: false
       },
       { key: 'test2',
-        sortable: true
+        orderable: true
       },
       { key: 'test3',
-        sortable: true
+        orderable: true
       },
       { key: 'test4',
-        sortable: true
+        orderable: true
       }
     ],
     searchFields: { test1: { value: 'test', regex: true }, test2: 'test', test3: /test/gi }
@@ -322,53 +324,78 @@ test('ItemsProvider.items searchFields override', async (t) => {
   t.is(query.columns[2].search.regex, false)
 })
 
-test('ItemsProvider.items sortBy sortDesc', async (t) => {
-  const fakeAxios = {}
-  fakeAxios.get = sinon.fake.returns(new Promise((resolve, reject) => {
-    resolve({
-      data: {
-        recordsFiltered: 0,
-        recordsTotal: 1,
-        data: null
-      }
-    })
-  }))
-  let translated = false
+// TODO: test canceltoken
+// test('ItemsProvider.items sortBy sortDesc', async (t) => {
+//   var mock = new MockAdapter(axios)
+//   const CancelToken = axios.CancelToken
+//   let cancel = null
 
-  const ip = new ItemsProvider({
-    axios: fakeAxios,
-    fields: [
-      {
-        key: 'test0',
-        sortable: false
-      },
-      { key: 'test1',
-        sortable: true,
-        searchable: false
-      },
-      { key: 'test2',
-        sortable: true
-      },
-      { key: 'test3',
-        sortable: true
-      },
-      { key: 'test4',
-        sortable: true
-      }
-    ]
-  })
+//   const withDelay = (delay, response) => config => {
+//     return new Promise(function(resolve, reject) {
+//       setTimeout(function() {
+//           resolve(response)
+//       }, delay)
+//     })
+//   }
+  
+//   const data = { 
+//     recordsFiltered: 0,
+//     recordsTotal: 1,
+//     data: null
+//    }
 
-  await ip.items({
-    apiUrl: 'https://www.google.com/?test=unit',
-    currentPage: 1,
-    perPage: 15,
-    sortBy: 'test1',
-    sortDesc: false,
-  })
+//    const data2 = { 
+//     recordsFiltered: 0,
+//     recordsTotal: 1,
+//     data: [1]
+//    }
 
-  const query = ip.state.query
+//   mock.onGet('http://items.test/items', {
+//     cancelToken: new CancelToken(function executor(c) {
+//       cancel = c
+//     })
+//   }).reply(200, data)
 
-  // assert filter column 0 by regex
-  t.is(query.order[0].column, 1)
-  t.is(query.order[0].dir, 'asc')
-})
+//   mock.onGet('http://items.test/items2', {
+//     cancelToken: new CancelToken(function executor(c) {
+//       cancel = c
+//     })
+//   }).reply(200,withDelay(5000,[200, data2]))
+  
+//   const ip = new ItemsProvider({
+//     axios: axios,
+//     fields: [
+//       {
+//         key: 'test0',
+//         orderable: false
+//       }
+//     ]
+//   })
+
+//   async function testDelay(q) {
+//     return ip.items({
+//       apiUrl: 'http://items.test/items2?q=' + q,
+//       currentPage: 1,
+//       perPage: 15,
+//     })
+//   }
+
+//   async function test(q) {
+//     return ip.items({
+//       apiUrl: 'http://items.test/items?q=' + q,
+//       currentPage: 1,
+//       perPage: 15,
+//     })
+//   }
+
+//   const a = test(Date.now())
+//   const b = testDelay(Date.now())
+//   const c = test(Date.now())
+
+// console.log(a,b,c)
+
+//   const query = ip.state.query
+
+//   // only items form q=2 are returned
+//   t.is(query.q, '2')
+// })
