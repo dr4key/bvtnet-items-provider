@@ -1,61 +1,59 @@
-let _name = new WeakMap(),
- _axios = new WeakMap(),
- _localItems = new WeakMap()
 let _name = new WeakMap()
 let _axios = new WeakMap()
 let _localItems = new WeakMap()
 
 class ItemsProvider {
   /**
-	 * Initialize an instance of ItemsProvider
+   * Initialize an instance of ItemsProvider
    *
    * @param Object opts  options object
-	 * @return             an instance of ItemsProvider
-	 */
+   * @return             an instance of ItemsProvider
+   */
   constructor(opts) {
     return this.init(opts)
   }
 
   /**
-	 * Initialize an instance of ItemsProvider
+   * Initialize an instance of ItemsProvider
    *
    * @param Object opts  options object
-	 * @return ItemsProvider       an instance of ItemsProvider
-	 */
+   * @return ItemsProvider       an instance of ItemsProvider
+   */
   init(opts = {}) {
-    const that   = this
+    const that = this
     const fields = opts.fields || []
-    const axios  = opts.axios
-    const state  = {}
+    const axios = opts.axios
+    const state = {}
     const isFieldsArray = fields.constructor === Array || Array.isArray(fields)
 
     _name.set(that, 'ItemsProvider')
     _axios.set(that, axios)
 
-    that.stateId     = opts.stateId
-    that.state       = state
-    that.fields      = fields
-    that.busy        = false
-    that.storage     = opts.storage || window.localStorage
+    that.stateId = opts.stateId
+    that.state = state
+    that.fields = fields
+    that.busy = false
+    that.storage = opts.storage || window.localStorage
     that.pageLengths = [
-      { value: 15, text: '15'},
-      { value: 100, text: '100'},
-      { value: 500, text: '500'},
-      { value: 1000, text: '1000'},
-      { value: -1, text: 'All'}
+      {value: 15, text: '15'},
+      {value: 100, text: '100'},
+      {value: 500, text: '500'},
+      {value: 1000, text: '1000'},
+      {value: -1, text: 'All'}
     ]
     that.cancel = null
     that.resetCounterVars()
 
-    state.perPage              = opts.perPage || 15
-    state.currentPage          = opts.currentPage || 1
-    state.filter               = opts.filter
-    state.filterIgnoredFields  = opts.filterIgnoredFields || []
+    state.draw = 1
+    state.perPage = opts.perPage || 15
+    state.currentPage = opts.currentPage || 1
+    state.filter = opts.filter
+    state.filterIgnoredFields = opts.filterIgnoredFields || []
     state.filterIncludedFields = opts.filterIncludedFields || []
-    state.searchFields         = opts.searchFields || {}
-    state.sortFields           = opts.sortFields || {}
-    state.query                = opts.query || {}
-    state.queryUrl             = opts.queryUrl
+    state.searchFields = opts.searchFields || {}
+    state.sortFields = opts.sortFields || {}
+    state.query = opts.query || {}
+    state.queryUrl = opts.queryUrl
 
     // field is not array, must be object type
     if (!isFieldsArray) {
@@ -65,7 +63,7 @@ class ItemsProvider {
 
       for (let k in fields) {
         const field = fields[k]
-        const col   = {}
+        const col = {}
 
         field.key = `${field.key || field.name || field.data || k}`
 
@@ -76,7 +74,7 @@ class ItemsProvider {
           delete field['filterByFormatted']
         }
 
-        for(let i = 0; i < copyable.length; i++) {
+        for (let i = 0; i < copyable.length; i++) {
           if (field.hasOwnProperty(copyable[i])) {
             col[copyable[i]] = field[copyable[i]]
           }
@@ -93,7 +91,7 @@ class ItemsProvider {
     }
 
     // finally, load states
-    if (typeof(that.stateId) === 'string') {
+    if (typeof (that.stateId) === 'string') {
 
       if (typeof that.onStateLoading === 'function') {
         that.onStateLoading()
@@ -101,9 +99,9 @@ class ItemsProvider {
 
       // begin saving state
       const savedState = that.storage.getItem(that.getStateId())
-      if (typeof(savedState) === 'string' && savedState.indexOf('}') > 0) {
+      if (typeof (savedState) === 'string' && savedState.indexOf('}') > 0) {
         const state = JSON.parse(savedState)
-        for(let k in state) {
+        for (let k in state) {
           that.state[k] = state[k]
         }
 
@@ -123,6 +121,7 @@ class ItemsProvider {
    */
   resetCounterVars() {
     const that = this
+    that.rowsFiltered = 0
     that.totalRows = that.startRow = that.endRow = 0
   }
 
@@ -165,12 +164,13 @@ class ItemsProvider {
    * @param Array items list of local items
    */
   setLocalItems(items) {
-    const that       = this
+    const that = this
     that.state.currentPage = 1
-    that.totalRows         = items ? items.length : 0
-    that.startRow          = that.totalRows > 0 ? 1 : 0
-    that.endRow            = that.totalRows
-    that.state.perPage     = -1
+    that.rowsFiltered = items ? items.length : 0
+    that.totalRows = items ? items.length : 0
+    that.startRow = that.totalRows > 0 ? 1 : 0
+    that.endRow = that.totalRows
+    that.state.perPage = -1
 
     _localItems.set(this, items)
   }
@@ -241,7 +241,7 @@ class ItemsProvider {
    * @return String     the query string
    */
   queryStringify(obj, prefix) {
-    const that   = this
+    const that = this
     const encode = that.encode
 
     let str = [], p
@@ -267,15 +267,15 @@ class ItemsProvider {
    * @return Object    the query object
    */
   translateContext(ctx, inQuery = {}) {
-    const that   = this
+    const that = this
     const fields = that.fields
-    const state  = that.state
-    const qry    = state.extraQuery || {}
-    const query  = {
-      draw: 1,
+    const state = that.state
+    const qry = state.extraQuery || {}
+    const query = {
+      draw: state.draw,
       start: (ctx.currentPage - 1) * ctx.perPage,
       length: ctx.perPage,
-      search: { value: `${ctx.filter || ''}` },
+      search: {value: `${ctx.filter || ''}`},
       order: [],
       columns: [],
       // object spread allow for overriding or passing additional query parameters
@@ -288,7 +288,7 @@ class ItemsProvider {
     if (ctx.filter instanceof RegExp) {
       query.search.regex = true
       query.search.value = ctx.filter.source
-    } else if (typeof(ctx.filter) !== 'string') {
+    } else if (typeof (ctx.filter) !== 'string') {
       query.search.value = ''
     }
 
@@ -341,7 +341,7 @@ class ItemsProvider {
           if (val.value) {
             col.search = val
           } else {
-            col.search =  { value: `${val || ''}`, regex: false }
+            col.search = {value: `${val || ''}`, regex: false}
 
             if (val instanceof RegExp) {
               col.search.regex = true
@@ -356,8 +356,8 @@ class ItemsProvider {
         const sort = sortFields[field.key]
 
         // validate valid values
-        if (sort === 'asc' || sort  === 'desc') {
-          query.order.push({ column: index, dir: sort })
+        if (sort === 'asc' || sort === 'desc') {
+          query.order.push({column: index, dir: sort})
         }
       }
     }
@@ -386,7 +386,7 @@ class ItemsProvider {
   performSaveState() {
     const that = this
 
-    if (typeof(that.stateId) !== 'string') {
+    if (typeof (that.stateId) !== 'string') {
       return that
     }
 
@@ -405,14 +405,14 @@ class ItemsProvider {
   }
 
   /**
-	 * the provider function to use with bootstrap vue
-	 *
-	 * @param  Object   ctx bootstrap-vue context object
+   * the provider function to use with bootstrap vue
+   *
+   * @param  Object   ctx bootstrap-vue context object
    * @param  Function cb the callback function
-	 * @return Array   array of items
-	 */
+   * @return Array   array of items
+   */
   executeQuery(ctx, cb = null) {
-    const that     = this
+    const that = this
     const locItems = that.getLocalItems(cb)
     const apiParts = (ctx.apiUrl || that.apiUrl).split('?')
     let query = {}
@@ -427,12 +427,12 @@ class ItemsProvider {
 
     query = that.translateContext(ctx, query)
 
-    if (typeof that.onBeforeQuery  === 'function') {
+    if (typeof that.onBeforeQuery === 'function') {
       that.onBeforeQuery(query, ctx)
     }
 
     that.state.queryUrl = apiParts[0]
-    that.state.query    = query
+    that.state.query = query
 
     if (locItems) {
       return locItems
@@ -441,7 +441,7 @@ class ItemsProvider {
     that.resetCounterVars()
     that.busy = true
 
-    const axios   = that.getAxios()
+    const axios = that.getAxios()
     const ajaxUrl = that.state.queryUrl
     const options = (typeof axios.CancelToken === 'function')
       ? {
@@ -456,10 +456,11 @@ class ItemsProvider {
       : axios.get(`${ajaxUrl}?${that.queryStringify(query)}`, options)
 
     return promise.then(rsp => {
-      const myData   = rsp.data
-   		that.totalRows = myData.recordsFiltered || myData.recordsTotal
-      that.startRow  = that.totalRows > 0 ? query.start + 1 : 0
-      that.endRow    = query.start + query.length
+      const myData = rsp.data
+      that.rowsFiltered = myData.recordsFiltered
+      that.totalRows = myData.recordsTotal
+      that.startRow = that.totalRows > 0 ? query.start + 1 : 0
+      that.endRow = query.start + query.length
 
       if (that.endRow > that.totalRows) {
         that.endRow = that.totalRows
