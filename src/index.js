@@ -61,7 +61,7 @@ class ItemsProvider {
     if (!isFieldsArray) {
       that.fields = []
       // these are either internal or fields listed from b-table
-      const copyable = ['onFieldTranslate', 'searchable', 'isLocal', 'key', 'label','headerTitle', 'headerAbbr', 'class', 'formatter', 'sortable', 'sortDirection', 'sortByFormatted', 'filterByFormatted', 'tdClass', 'thClass', 'thStyle', 'variant', 'tdAttr', 'thAttr', 'isRowHeader', 'stickyColumn', 'data', 'name']
+      const copyable = ['onFieldTranslate', 'searchable', 'isLocal', 'key', 'label', 'headerTitle', 'headerAbbr', 'class', 'formatter', 'orderable', 'sortDirection', 'sortByFormatted', 'filterByFormatted', 'tdClass', 'thClass', 'thStyle', 'variant', 'tdAttr', 'thAttr', 'isRowHeader', 'stickyColumn', 'data', 'name']
 
       for (let k in fields) {
         const field = fields[k]
@@ -72,7 +72,7 @@ class ItemsProvider {
         // disable search and sort for local field
         if (field.isLocal) {
           field.searchable = false
-          field.sortable  = false
+          field.orderable = false
           delete field['filterByFormatted']
         }
 
@@ -304,8 +304,8 @@ class ItemsProvider {
       const col = {
         data: field.data || field.key,
         name: field.name || field.key,
-        searchable: typeof(field.searchable) === 'undefined' ? true : field.searchable,
-        orderable: typeof(field.sortable) === 'undefined' ? true : field.sortable
+        searchable: typeof (field.searchable) === 'undefined' ? true : field.searchable,
+        orderable: typeof (field.orderable) === 'undefined' ? true : field.orderable
       }
 
       if (state.filterIgnoredFields && state.filterIgnoredFields.indexOf(field.key) > -1) {
